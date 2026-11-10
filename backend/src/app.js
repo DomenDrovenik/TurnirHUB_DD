@@ -3,6 +3,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/auth');
 const tournamentRoutes = require('./routes/tournaments');
+const teamRoutes = require('./routes/teams');
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/tournaments', tournamentRoutes);
+app.use('/api/teams', teamRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Pot ne obstaja' });
