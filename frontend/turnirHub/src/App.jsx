@@ -4,7 +4,9 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
+import MyTournaments from './pages/MyTournaments'
 import Register from './pages/Register'
+import TournamentForm from './pages/TournamentForm'
 
 function Navbar() {
   const { user, logout } = useAuth()
@@ -17,6 +19,7 @@ function Navbar() {
       <nav>
         {user ? (
           <>
+            {user.role === 'ORGANIZER' && <Link to="/organizator/turniri">Moji turnirji</Link>}
             <span className="muted">{user.displayName}</span>
             <button type="button" className="link" onClick={logout}>
               Odjava
@@ -41,6 +44,11 @@ export default function App() {
         <Routes>
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Home />} />
+          </Route>
+          <Route element={<ProtectedRoute roles={['ORGANIZER']} />}>
+            <Route path="/organizator/turniri" element={<MyTournaments />} />
+            <Route path="/organizator/turniri/nov" element={<TournamentForm />} />
+            <Route path="/organizator/turniri/:id/uredi" element={<TournamentForm />} />
           </Route>
           <Route path="/prijava" element={<Login />} />
           <Route path="/registracija" element={<Register />} />

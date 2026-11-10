@@ -22,5 +22,41 @@ model User {
   isBlocked    Boolean  @default(false) @map("is_blocked")
   createdAt    DateTime @default(now()) @map("created_at")
 
+  tournaments Tournament[]
+
   @@map("users")
+}
+
+enum TournamentFormat {
+  ROUND_ROBIN
+  SINGLE_ELIMINATION
+}
+
+enum TournamentStatus {
+  DRAFT
+  REGISTRATION_OPEN
+  REGISTRATION_CLOSED
+  IN_PROGRESS
+  FINISHED
+  CANCELLED
+}
+
+model Tournament {
+  id                   String           @id @default(uuid()) @db.Uuid
+  organizerId          String           @map("organizer_id") @db.Uuid
+  organizer            User             @relation(fields: [organizerId], references: [id])
+  name                 String
+  sport                String
+  format               TournamentFormat
+  location             String
+  startDate            DateTime         @map("start_date") @db.Date
+  registrationDeadline DateTime         @map("registration_deadline")
+  maxTeams             Int              @map("max_teams")
+  minPlayersPerTeam    Int              @map("min_players_per_team")
+  pointsWin            Int              @default(3) @map("points_win")
+  pointsDraw           Int              @default(1) @map("points_draw")
+  pointsLoss           Int              @default(0) @map("points_loss")
+  status               TournamentStatus @default(DRAFT)
+
+  @@map("tournaments")
 }

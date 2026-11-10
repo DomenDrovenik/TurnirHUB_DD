@@ -33,7 +33,7 @@ export default function Register() {
   }
 
   return (
-    <div className="card">
+    <div className="card narrow">
       <h1>Registracija</h1>
       <form onSubmit={handleSubmit} noValidate>
         <label>

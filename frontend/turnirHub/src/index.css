@@ -14,7 +14,7 @@ body {
 }
 
 main {
-  max-width: 480px;
+  max-width: 720px;
   margin: 2rem auto;
   padding: 0 1rem;
 }
@@ -107,4 +107,111 @@ button.link {
 
 .muted {
   color: #5f6b7a;
+}
+
+.narrow {
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+a.button,
+button.secondary,
+button.danger {
+  display: inline-block;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  background: #1f6feb;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a.button.secondary,
+button.secondary {
+  background: #e4e7ec;
+  color: #1f2933;
+}
+
+button.danger {
+  background: #c0392b;
+}
+
+select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #b8bec7;
+  border-radius: 6px;
+  font: inherit;
+  background: #fff;
+}
+
+input:disabled,
+select:disabled {
+  background: #eef0f3;
+  color: #5f6b7a;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.grid-2,
+.grid-3 {
+  display: grid;
+  gap: 1rem;
+}
+
+.grid-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.badge {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: #e4e7ec;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.badge-registration_open {
+  background: #d4edda;
+  color: #1e7e34;
+}
+
+.badge-cancelled {
+  background: #f8d7da;
+  color: #c0392b;
+}
+
+@media (max-width: 560px) {
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
 }
