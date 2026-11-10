@@ -4,8 +4,10 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
+import MyTeams from './pages/MyTeams'
 import MyTournaments from './pages/MyTournaments'
 import Register from './pages/Register'
+import TeamDetail from './pages/TeamDetail'
 import TournamentForm from './pages/TournamentForm'
 
 function Navbar() {
@@ -19,6 +21,7 @@ function Navbar() {
       <nav>
         {user ? (
           <>
+            {user.role !== 'ADMIN' && <Link to="/ekipe">Moje ekipe</Link>}
             {user.role === 'ORGANIZER' && <Link to="/organizator/turniri">Moji turnirji</Link>}
             <span className="muted">{user.displayName}</span>
             <button type="button" className="link" onClick={logout}>
@@ -49,6 +52,10 @@ export default function App() {
             <Route path="/organizator/turniri" element={<MyTournaments />} />
             <Route path="/organizator/turniri/nov" element={<TournamentForm />} />
             <Route path="/organizator/turniri/:id/uredi" element={<TournamentForm />} />
+          </Route>
+          <Route element={<ProtectedRoute roles={['PLAYER', 'ORGANIZER']} />}>
+            <Route path="/ekipe" element={<MyTeams />} />
+            <Route path="/ekipe/:id" element={<TeamDetail />} />
           </Route>
           <Route path="/prijava" element={<Login />} />
           <Route path="/registracija" element={<Register />} />

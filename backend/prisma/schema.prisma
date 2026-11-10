@@ -22,7 +22,9 @@ model User {
   isBlocked    Boolean  @default(false) @map("is_blocked")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  tournaments Tournament[]
+  tournaments     Tournament[]
+  captainOfTeams  Team[]       @relation("TeamCaptain")
+  teamMemberships TeamMember[]
 
   @@map("users")
 }
@@ -59,4 +61,28 @@ model Tournament {
   status               TournamentStatus @default(DRAFT)
 
   @@map("tournaments")
+}
+
+model Team {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  sport     String
+  captainId String   @map("captain_id") @db.Uuid
+  captain   User     @relation("TeamCaptain", fields: [captainId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+
+  members TeamMember[]
+
+  @@map("teams")
+}
+
+model TeamMember {
+  teamId   String   @map("team_id") @db.Uuid
+  userId   String   @map("user_id") @db.Uuid
+  joinedAt DateTime @default(now()) @map("joined_at")
+  team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@id([teamId, userId])
+  @@map("team_members")
 }
