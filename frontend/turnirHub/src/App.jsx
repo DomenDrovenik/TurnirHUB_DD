@@ -9,6 +9,7 @@ import MyTournaments from './pages/MyTournaments'
 import Register from './pages/Register'
 import TeamDetail from './pages/TeamDetail'
 import TournamentForm from './pages/TournamentForm'
+import TournamentRegistrations from './pages/TournamentRegistrations'
 
 function Navbar() {
   const { user, logout } = useAuth()
@@ -52,6 +53,7 @@ export default function App() {
             <Route path="/organizator/turniri" element={<MyTournaments />} />
             <Route path="/organizator/turniri/nov" element={<TournamentForm />} />
             <Route path="/organizator/turniri/:id/uredi" element={<TournamentForm />} />
+            <Route path="/organizator/turniri/:id/prijave" element={<TournamentRegistrations />} />
           </Route>
           <Route element={<ProtectedRoute roles={['PLAYER', 'ORGANIZER']} />}>
             <Route path="/ekipe" element={<MyTeams />} />

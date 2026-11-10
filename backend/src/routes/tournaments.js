@@ -37,6 +37,15 @@ router.get('/mine', requireAuth, requireRole('ORGANIZER'), async (req, res) => {
   res.json({ tournaments: tournaments.map(publicTournament) });
 });
 
+// Turnirji z odprtimi prijavami (za prijavo ekipe)
+router.get('/open', requireAuth, async (req, res) => {
+  const tournaments = await prisma.tournament.findMany({
+    where: { status: 'REGISTRATION_OPEN', registrationDeadline: { gt: new Date() } },
+    orderBy: { startDate: 'asc' },
+  });
+  res.json({ tournaments: tournaments.map(publicTournament) });
+});
+
 // Ustvarjanje turnirja (vedno v stanju DRAFT)
 router.post('/', requireAuth, requireRole('ORGANIZER'), async (req, res) => {
   const { data, fields } = parseTournamentInput(req.body);

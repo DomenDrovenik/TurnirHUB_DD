@@ -30,3 +30,10 @@ export function formatDate(isoDate) {
   const [y, m, d] = isoDate.split('-')
   return `${Number(d)}. ${Number(m)}. ${y}`
 }
+
+export const REGISTRATION_LABELS = {
+  PENDING: 'Čaka na potrditev',
+  APPROVED: 'Potrjena',
+  REJECTED: 'Zavrnjena',
+  WAITLISTED: 'Na čakalni listi',
+}
