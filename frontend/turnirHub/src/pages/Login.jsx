@@ -32,7 +32,7 @@ export default function Login() {
   }
 
   return (
-    <div className="card">
+    <div className="card narrow">
       <h1>Prijava</h1>
       {location.state?.registered && (
         <p className="success">Registracija je uspela. Zdaj se lahko prijavite.</p>
