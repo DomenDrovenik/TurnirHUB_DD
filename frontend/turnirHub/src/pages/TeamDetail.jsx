@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../auth/useAuth'
+import { REGISTRATION_LABELS, formatDate } from '../tournaments'
 
 export default function TeamDetail() {
   const { id } = useParams()
@@ -10,6 +11,11 @@ export default function TeamDetail() {
   const [error, setError] = useState('')
   const [actionError, setActionError] = useState('')
   const [identifier, setIdentifier] = useState('')
+  const [registrations, setRegistrations] = useState([])
+  const [openTournaments, setOpenTournaments] = useState([])
+  const [tournamentId, setTournamentId] = useState('')
+  const [registerError, setRegisterError] = useState('')
+  const [registerSuccess, setRegisterSuccess] = useState('')
 
   const load = useCallback(() => {
     return api(`/api/teams/${id}`)
@@ -17,9 +23,33 @@ export default function TeamDetail() {
       .catch((err) => setError(err.message))
   }, [id])
 
+  const loadRegistrations = useCallback(() => {
+    return api(`/api/teams/${id}/registrations`)
+      .then((data) => setRegistrations(data.registrations))
+      .catch(() => {})
+  }, [id])
+
   useEffect(() => {
     load()
-  }, [load])
+    loadRegistrations()
+    api('/api/tournaments/open')
+      .then((data) => setOpenTournaments(data.tournaments))
+      .catch(() => {})
+  }, [load, loadRegistrations])
+
+  async function register(event) {
+    event.preventDefault()
+    setRegisterError('')
+    setRegisterSuccess('')
+    try {
+      await api(`/api/tournaments/${tournamentId}/registrations`, { method: 'POST', body: { teamId: id } })
+      setRegisterSuccess('Prijava je oddana in čaka na potrditev organizatorja.')
+      setTournamentId('')
+      await loadRegistrations()
+    } catch (err) {
+      setRegisterError(err.message)
+    }
+  }
 
   async function addMember(event) {
     event.preventDefault()
@@ -97,6 +127,50 @@ export default function TeamDetail() {
             <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} />
           </label>
           <button type="submit">Dodaj</button>
+        </form>
+      )}
+
+      <h2>Prijave na turnirje</h2>
+      {registrations.length === 0 && <p className="muted">Ekipa še ni prijavljena na noben turnir.</p>}
+      <ul className="list">
+        {registrations.map((r) => (
+          <li key={r.id} className="card">
+            <div className="row">
+              <span>
+                <strong>{r.tournament.name}</strong>
+                <span className="muted"> · začetek {formatDate(r.tournament.startDate)}</span>
+              </span>
+              <span className={`badge badge-${r.status.toLowerCase()}`}>{REGISTRATION_LABELS[r.status]}</span>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      {isCaptain && (
+        <form className="card" onSubmit={register}>
+          <h2>Prijavi ekipo na turnir</h2>
+          {openTournaments.length === 0 ? (
+            <p className="muted">Trenutno ni turnirjev z odprtimi prijavami.</p>
+          ) : (
+            <>
+              <label>
+                Turnir
+                <select value={tournamentId} onChange={(e) => setTournamentId(e.target.value)} required>
+                  <option value="">Izberite turnir ...</option>
+                  {openTournaments.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} ({t.sport}, {formatDate(t.startDate)})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {registerError && <p className="error">{registerError}</p>}
+              {registerSuccess && <p className="success">{registerSuccess}</p>}
+              <button type="submit" disabled={!tournamentId}>
+                Prijavi
+              </button>
+            </>
+          )}
         </form>
       )}
     </div>

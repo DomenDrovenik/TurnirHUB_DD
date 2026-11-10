@@ -66,6 +66,11 @@ export default function MyTournaments() {
               Do {t.maxTeams} ekip, najmanj {t.minPlayersPerTeam} igralcev v ekipi
             </p>
             <div className="actions">
+              {t.status !== 'DRAFT' && (
+                <Link to={`/organizator/turniri/${t.id}/prijave`} className="button secondary">
+                  Prijave
+                </Link>
+              )}
               {EDITABLE.includes(t.status) && (
                 <Link to={`/organizator/turniri/${t.id}/uredi`} className="button secondary">
                   Uredi
