@@ -81,6 +81,11 @@ export default function TournamentSchedule() {
                       <span className="badge">{m.isBye ? 'Napreduje' : MATCH_STATUS_LABELS[m.status]}</span>
                     )}
                   </div>
+                  {m.home && m.away && (
+                    <p>
+                      <Link to={`/tekme/${m.id}`}>Odpri tekmo</Link>
+                    </p>
+                  )}
                 </li>
               ))}
           </ul>

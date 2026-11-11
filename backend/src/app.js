@@ -6,6 +6,7 @@ const tournamentRoutes = require('./routes/tournaments');
 const teamRoutes = require('./routes/teams');
 const registrationRoutes = require('./routes/registrations');
 const scheduleRoutes = require('./routes/schedule');
+const matchRoutes = require('./routes/matches');
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/api/tournaments', tournamentRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api', registrationRoutes);
 app.use('/api', scheduleRoutes);
+app.use('/api', matchRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Pot ne obstaja' });
