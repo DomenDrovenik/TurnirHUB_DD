@@ -8,6 +8,7 @@ import MyTeams from './pages/MyTeams'
 import MyTournaments from './pages/MyTournaments'
 import Register from './pages/Register'
 import TeamDetail from './pages/TeamDetail'
+import TournamentSchedule from './pages/TournamentSchedule'
 import TournamentForm from './pages/TournamentForm'
 import TournamentRegistrations from './pages/TournamentRegistrations'
 
@@ -48,6 +49,7 @@ export default function App() {
         <Routes>
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Home />} />
+            <Route path="/turnirji/:id/razpored" element={<TournamentSchedule />} />
           </Route>
           <Route element={<ProtectedRoute roles={['ORGANIZER']} />}>
             <Route path="/organizator/turniri" element={<MyTournaments />} />

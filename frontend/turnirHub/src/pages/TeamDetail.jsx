@@ -142,6 +142,11 @@ export default function TeamDetail() {
               </span>
               <span className={`badge badge-${r.status.toLowerCase()}`}>{REGISTRATION_LABELS[r.status]}</span>
             </div>
+            {['IN_PROGRESS', 'FINISHED'].includes(r.tournament.status) && (
+              <p>
+                <Link to={`/turnirji/${r.tournament.id}/razpored`}>Razpored turnirja</Link>
+              </p>
+            )}
           </li>
         ))}
       </ul>

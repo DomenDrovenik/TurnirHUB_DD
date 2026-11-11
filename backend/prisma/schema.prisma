@@ -61,6 +61,7 @@ model Tournament {
   status               TournamentStatus @default(DRAFT)
 
   registrations Registration[]
+  matches       Match[]
 
   @@map("tournaments")
 }
@@ -73,8 +74,11 @@ model Team {
   captain   User     @relation("TeamCaptain", fields: [captainId], references: [id])
   createdAt DateTime @default(now()) @map("created_at")
 
-  members       TeamMember[]
-  registrations Registration[]
+  members         TeamMember[]
+  registrations   Registration[]
+  homeMatches     Match[]        @relation("MatchHome")
+  awayMatches     Match[]        @relation("MatchAway")
+  reportedMatches Match[]        @relation("MatchReporter")
 
   @@map("teams")
 }
@@ -108,4 +112,45 @@ model Registration {
 
   @@unique([tournamentId, teamId])
   @@map("registrations")
+}
+
+enum MatchStatus {
+  SCHEDULED
+  AWAITING_CONFIRMATION
+  CONFIRMED
+  DISPUTED
+  CANCELLED
+}
+
+enum MatchSlot {
+  HOME
+  AWAY
+}
+
+// Tekma. V izločilnem drevesu sta domača in gostujoča ekipa lahko null, dokler zmagovalca
+// prejšnjih tekem ni; v prvem krogu away = null pomeni prosti prehod.
+model Match {
+  id               String      @id @default(uuid()) @db.Uuid
+  tournamentId     String      @map("tournament_id") @db.Uuid
+  round            Int
+  position         Int
+  homeTeamId       String?     @map("home_team_id") @db.Uuid
+  awayTeamId       String?     @map("away_team_id") @db.Uuid
+  scheduledAt      DateTime?   @map("scheduled_at")
+  homeScore        Int?        @map("home_score")
+  awayScore        Int?        @map("away_score")
+  status           MatchStatus @default(SCHEDULED)
+  reportedByTeamId String?     @map("reported_by_team_id") @db.Uuid
+  nextMatchId      String?     @map("next_match_id") @db.Uuid
+  nextMatchSlot    MatchSlot?  @map("next_match_slot")
+
+  tournament      Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  homeTeam        Team?      @relation("MatchHome", fields: [homeTeamId], references: [id])
+  awayTeam        Team?      @relation("MatchAway", fields: [awayTeamId], references: [id])
+  reportedByTeam  Team?      @relation("MatchReporter", fields: [reportedByTeamId], references: [id])
+  nextMatch       Match?     @relation("NextMatch", fields: [nextMatchId], references: [id])
+  previousMatches Match[]    @relation("NextMatch")
+
+  @@index([tournamentId, round])
+  @@map("matches")
 }
