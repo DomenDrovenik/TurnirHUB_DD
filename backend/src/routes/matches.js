@@ -110,14 +110,48 @@ const wrap = (handler) => async (req, res, next) => {
   }
 };
 
-// Atomarna sprememba stanja: uspe samo, če je tekma še v pričakovanem stanju.
-async function transition(match, from, data) {
-  const { count } = await prisma.match.updateMany({
-    where: { id: match.id, status: from },
-    data: { ...data },
+// Ko je tekma potrjena: zmagovalec izločilne tekme zasede mesto v naslednji tekmi,
+// ko so vse tekme potrjene, pa turnir preide v FINISHED.
+async function afterConfirmed(tx, match, homeScore, awayScore) {
+  if (match.nextMatchId) {
+    if (homeScore === awayScore) throw new ApiError(400, 'Pri izločanju neodločen izid ni dovoljen');
+    const winnerId = homeScore > awayScore ? match.homeTeamId : match.awayTeamId;
+    await tx.match.update({
+      where: { id: match.nextMatchId },
+      data: match.nextMatchSlot === 'HOME' ? { homeTeamId: winnerId } : { awayTeamId: winnerId },
+    });
+  }
+  const open = await tx.match.count({
+    where: { tournamentId: match.tournamentId, status: { notIn: ['CONFIRMED', 'CANCELLED'] } },
   });
-  if (count === 0) throw new ApiError(409, 'Stanje tekme se je medtem spremenilo, osvežite stran');
-  return prisma.match.findUnique({ where: { id: match.id }, include: MATCH_INCLUDE });
+  if (open === 0) {
+    await tx.tournament.update({ where: { id: match.tournamentId }, data: { status: 'FINISHED' } });
+  }
+}
+
+// Atomarna sprememba stanja: uspe samo, če je tekma še v pričakovanem stanju.
+// Potrditev rezultata in napredovanje tečeta v isti transakciji; zaklep vrstice turnirja
+// poskrbi, da sočasni potrditvi zadnjih tekem ne zgrešita prehoda v FINISHED.
+async function transition(match, from, data) {
+  return prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM tournaments WHERE id = ${match.tournamentId}::uuid FOR UPDATE`;
+
+    const { count } = await tx.match.updateMany({
+      where: { id: match.id, status: from },
+      data: { ...data },
+    });
+    if (count === 0) throw new ApiError(409, 'Stanje tekme se je medtem spremenilo, osvežite stran');
+
+    if (data.status === 'CONFIRMED') {
+      await afterConfirmed(
+        tx,
+        match,
+        data.homeScore ?? match.homeScore,
+        data.awayScore ?? match.awayScore,
+      );
+    }
+    return tx.match.findUnique({ where: { id: match.id }, include: MATCH_INCLUDE });
+  });
 }
 
 // Podrobnosti tekme z dovoljenji prijavljenega uporabnika
