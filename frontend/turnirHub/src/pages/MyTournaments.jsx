@@ -25,6 +25,17 @@ export default function MyTournaments() {
     load()
   }, [load])
 
+  async function generateSchedule(tournament) {
+    if (!window.confirm(`Generiram razpored za turnir „${tournament.name}"? Tega ni mogoče ponoviti.`)) return
+    setError('')
+    try {
+      await api(`/api/tournaments/${tournament.id}/schedule`, { method: 'POST' })
+      await load()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   async function changeStatus(tournament, status, confirmText) {
     if (confirmText && !window.confirm(confirmText)) return
     setError('')
@@ -70,6 +81,16 @@ export default function MyTournaments() {
                 <Link to={`/organizator/turniri/${t.id}/prijave`} className="button secondary">
                   Prijave
                 </Link>
+              )}
+              {['IN_PROGRESS', 'FINISHED'].includes(t.status) && (
+                <Link to={`/turnirji/${t.id}/razpored`} className="button secondary">
+                  Razpored
+                </Link>
+              )}
+              {t.status === 'REGISTRATION_CLOSED' && (
+                <button type="button" onClick={() => generateSchedule(t)}>
+                  Generiraj razpored
+                </button>
               )}
               {EDITABLE.includes(t.status) && (
                 <Link to={`/organizator/turniri/${t.id}/uredi`} className="button secondary">
