@@ -4,6 +4,7 @@ const prisma = require('../lib/prisma');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const { UUID_RE } = require('../lib/tournamentRules');
 const { roundRobin, singleElimination } = require('../lib/schedule');
+const { computeStandings } = require('../lib/standings');
 
 const router = express.Router();
 
@@ -129,6 +130,39 @@ router.get('/tournaments/:id/matches', async (req, res, next) => {
     res.json({
       tournament: { id: tournament.id, name: tournament.name, format: tournament.format, status: tournament.status },
       matches: matches.map((m) => publicMatch(m, tournament.format)),
+    });
+  } catch (err) {
+    if (err instanceof ApiError) return res.status(err.status).json({ error: err.message });
+    return next(err);
+  }
+});
+
+// Lestvica turnirja: izračunana sproti iz potrjenih tekem (javno za objavljene turnirje)
+router.get('/tournaments/:id/standings', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!UUID_RE.test(id)) throw new ApiError(404, 'Turnir ne obstaja');
+    const tournament = await prisma.tournament.findUnique({ where: { id } });
+    if (!tournament || tournament.status === 'DRAFT') throw new ApiError(404, 'Turnir ne obstaja');
+
+    const registrations = await prisma.registration.findMany({
+      where: { tournamentId: id, status: 'APPROVED' },
+      include: { team: true },
+    });
+    const matches = await prisma.match.findMany({ where: { tournamentId: id, status: 'CONFIRMED' } });
+
+    const standings = computeStandings(
+      registrations.map((r) => ({ id: r.team.id, name: r.team.name })),
+      matches,
+      {
+        pointsWin: tournament.pointsWin,
+        pointsDraw: tournament.pointsDraw,
+        pointsLoss: tournament.pointsLoss,
+      },
+    );
+    res.json({
+      tournament: { id: tournament.id, name: tournament.name, format: tournament.format, status: tournament.status },
+      standings,
     });
   } catch (err) {
     if (err instanceof ApiError) return res.status(err.status).json({ error: err.message });

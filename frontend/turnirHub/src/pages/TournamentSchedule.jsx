@@ -27,12 +27,16 @@ function TeamName({ team, fallback }) {
 export default function TournamentSchedule() {
   const { id } = useParams()
   const [data, setData] = useState(null)
+  const [standings, setStandings] = useState([])
   const [error, setError] = useState('')
 
   useEffect(() => {
     api(`/api/tournaments/${id}/matches`)
       .then(setData)
       .catch((err) => setError(err.message))
+    api(`/api/tournaments/${id}/standings`)
+      .then((result) => setStandings(result.standings))
+      .catch(() => {})
   }, [id])
 
   if (error) return <p className="error">{error}</p>
@@ -47,7 +51,50 @@ export default function TournamentSchedule() {
       <div className="page-header">
         <h1>Razpored: {tournament.name}</h1>
       </div>
-      <p className="muted">{FORMAT_LABELS[tournament.format]}</p>
+      <p className="muted">
+        {FORMAT_LABELS[tournament.format]}
+        {tournament.status === 'FINISHED' && ' · Turnir je zaključen'}
+      </p>
+
+      {tournament.format === 'ROUND_ROBIN' && standings.length > 0 && (
+        <section>
+          <h2>Lestvica</h2>
+          <div className="card table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Ekipa</th>
+                  <th title="Odigrane tekme">Tek.</th>
+                  <th title="Zmage">Z</th>
+                  <th title="Remiji">R</th>
+                  <th title="Porazi">P</th>
+                  <th title="Razlika v zadetkih">Razl.</th>
+                  <th title="Točke">Toč.</th>
+                </tr>
+              </thead>
+              <tbody>
+                {standings.map((row) => (
+                  <tr key={row.teamId}>
+                    <td>{row.position}</td>
+                    <td>
+                      <strong>{row.name}</strong>
+                    </td>
+                    <td>{row.played}</td>
+                    <td>{row.won}</td>
+                    <td>{row.drawn}</td>
+                    <td>{row.lost}</td>
+                    <td>{row.goalDiff > 0 ? `+${row.goalDiff}` : row.goalDiff}</td>
+                    <td>
+                      <strong>{row.points}</strong>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
       {matches.length === 0 && (
         <div className="card">
